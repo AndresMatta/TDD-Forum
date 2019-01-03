@@ -13,6 +13,17 @@ class Thread extends Model
      */
     protected $guarded = [];
 
+    /**
+     * It references the related models that will be fetch with the Thread.
+     *
+     * @var array
+     */
+    protected $with = ['creator', 'channel'];
+
+    /**
+     * Boot the model.
+     * 
+     */
     protected static function boot()
     {
         parent::boot();
