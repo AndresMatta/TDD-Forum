@@ -18,9 +18,11 @@ class CreateThreadsTable extends Migration
             $table->string('title');
             $table->text('body');
             $table->unsignedInteger('user_id');
+            $table->unsignedInteger('channel_id');
             $table->timestamps();
             // Foreign Key.
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('channel_id')->references('id')->on('channels')->onDelete('cascade');
         });
     }
 

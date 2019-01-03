@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\ThreadController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -14,3 +16,15 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+Auth::routes();
+// Home
+Route::get('/home', 'HomeController@index')->name('home');
+// Threads
+Route::get('/threads', 'ThreadController@index');
+Route::get('/threads/create', 'ThreadController@create');
+Route::get('/threads/{channel}/{thread}', 'ThreadController@show');
+Route::post('/threads', 'ThreadController@store');
+Route::get('/threads/{channel}', 'ThreadController@index');
+// Replies
+Route::post('/threads/{channel}/{thread}/replies', 'ReplyController@store');
