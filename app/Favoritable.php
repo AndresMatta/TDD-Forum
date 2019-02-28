@@ -4,6 +4,13 @@ namespace App;
 
 trait Favoritable
 {
+    protected static function bootFavoritable()
+    {
+        static::deleting(function ($model) {
+            $model->favorites->each->delete();
+        });
+    }
+
     /**
      * It may be favorited by a user.
      *
@@ -15,8 +22,9 @@ trait Favoritable
     }
 
     /**
-     * The loggued in user favorites it.
+     * Favorite the current element.
      *
+     * @return Model
      */
     public function favorite()
     {
@@ -28,13 +36,36 @@ trait Favoritable
     }
 
     /**
+     * A favorited element can be unfavorited.
+     *
+     * @param
+     * @return
+     */
+    public function unfavorite()
+    {
+        $attributes = ['user_id' => auth()->id()];
+
+        $this->favorites()->where($attributes)->get()->each->delete();
+    }
+
+    /**
      * Verify if it has been favorited by the User.
      *
      * @return bool
      */
     public function isFavorited()
     {
-        return !! $this->favorites->where('user_id', auth()->id())->count();
+        return !!$this->favorites->where('user_id', auth()->id())->count();
+    }
+
+    /**
+     * Returns wheter the element is favorited or not.
+     *
+     * @return bool
+     */
+    public function getIsFavoritedAttribute()
+    {
+        return $this->isFavorited();
     }
 
     /**
@@ -46,5 +77,5 @@ trait Favoritable
     public function getFavoritesCountAttribute()
     {
         return $this->favorites->count();
-    }   
+    }
 }

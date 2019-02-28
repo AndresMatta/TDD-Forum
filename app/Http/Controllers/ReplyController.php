@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Reply;
 use App\Thread;
+use App\Rules\SpamFree;
 use Illuminate\Http\Request;
+use App\Http\Requests\CreatePostRequest;
 
 class ReplyController extends Controller
 {
@@ -13,7 +15,7 @@ class ReplyController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware('auth', ['except' => 'index']);
     }
 
     /**
@@ -21,9 +23,9 @@ class ReplyController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index($channelId, Thread $thread)
     {
-        //
+        return $thread->replies()->paginate(20);
     }
 
     /**
@@ -41,19 +43,15 @@ class ReplyController extends Controller
      *
      * @param string $channelId
      * @param  \App\Thread  $thread
+     * @param  \App\Http\Request\CreatePostRequest  $form
      * @return \Illuminate\Http\Response
      */
-    public function store($channelId, Thread $thread)
+    public function store($channelId, Thread $thread, CreatePostRequest $form)
     {
-        $attributes = request()->validate([
-            'body' => 'required'
-        ]);
-
-        $attributes['user_id'] = auth()->id();
-
-        $thread->addReply($attributes);
-
-        return back();
+        return $thread->addReply([
+            'body' => request('body'),
+            'user_id' => auth()->id()
+        ])->load('owner');
     }
 
     /**
@@ -87,7 +85,17 @@ class ReplyController extends Controller
      */
     public function update(Request $request, Reply $reply)
     {
-        //
+        $this->authorize('update', $reply);
+
+        try {
+            $attributes = request()->validate([
+                'body' => ['required', new SpamFree]
+            ]);
+
+            $reply->update($attributes);
+        } catch (\Exception $e) {
+            return response('Sorry, your reply could not be updated at this time.', 422);
+        }
     }
 
     /**
@@ -98,6 +106,14 @@ class ReplyController extends Controller
      */
     public function destroy(Reply $reply)
     {
-        //
+        $this->authorize('delete', $reply);
+
+        $reply->delete();
+
+        if (request()->expectsJson()) {
+            return response(['status' => 'Reply deleted.']);
+        }
+
+        return back();
     }
 }
