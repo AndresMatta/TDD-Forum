@@ -22,10 +22,10 @@ class ParticipateInForumTest extends TestCase
         $this->signIn()
             ->withoutExceptionHandling();
 
-        $thread = factory('App\Thread')->create();
-        $reply = factory('App\Reply')->make();
+        $thread = create('App\Thread');
+        $reply = make('App\Reply');
 
-        $this->post($thread->path() . ' /replies', $reply->toArray());
+        $this->post($thread->path() . '/replies', $reply->toArray());
 
         $this->assertDatabaseHas('replies', ['body' => $reply->body]);
         $this->assertEquals(1, $thread->fresh()->replies_count);

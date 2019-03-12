@@ -7,7 +7,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Carbon\Carbon;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use Notifiable;
 
@@ -17,7 +17,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name', 'email', 'password', 'avatar_path'
     ];
 
     /**
@@ -37,6 +37,19 @@ class User extends Authenticatable
     public function getRouteKeyName()
     {
         return 'name';
+    }
+
+    /**
+     * Description.
+     *
+     * @param
+     * @return
+     */
+    public function getAvatarPathAttribute($avatar)
+    {
+        $path = $avatar ? 'storage/' . $avatar : 'images/avatars/default.png';
+
+        return asset($path);
     }
 
     /**
@@ -70,7 +83,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Description.
+     * Record that the user has read the given thread.
      *
      * @param App\Thread $thread
      * @return void

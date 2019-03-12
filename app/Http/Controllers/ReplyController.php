@@ -41,12 +41,12 @@ class ReplyController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param string $channelId
+     * @param string $channel
      * @param  \App\Thread  $thread
      * @param  \App\Http\Request\CreatePostRequest  $form
      * @return \Illuminate\Http\Response
      */
-    public function store($channelId, Thread $thread, CreatePostRequest $form)
+    public function store($channel, Thread $thread, CreatePostRequest $form)
     {
         return $thread->addReply([
             'body' => request('body'),
@@ -87,15 +87,11 @@ class ReplyController extends Controller
     {
         $this->authorize('update', $reply);
 
-        try {
-            $attributes = request()->validate([
-                'body' => ['required', new SpamFree]
-            ]);
+        $attributes = request()->validate([
+            'body' => ['required', new SpamFree]
+        ]);
 
-            $reply->update($attributes);
-        } catch (\Exception $e) {
-            return response('Sorry, your reply could not be updated at this time.', 422);
-        }
+        $reply->update($attributes);
     }
 
     /**

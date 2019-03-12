@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Activity;
+use App\Thread;
 
 class CreateThreadsTest extends TestCase
 {
@@ -74,18 +75,19 @@ class CreateThreadsTest extends TestCase
             ->assertSessionHasErrors('channel_id');
     }
 
-    /**
-     * A logged in user sends a Thread to the endpoint.
-     *
-     * @param string $title
-     * @return $this
-     */
-    public function publishThread($overrides = [])
+    /** @test */
+    public function a_thread_requires_a_unique_slug()
     {
-        $thread = raw('App\Thread', $overrides);
+        $this->signIn()
+            ->withoutExceptionHandling();
 
-        return $this->signIn()
-                    ->post('/threads', $thread);
+        $thread = create('App\Thread', ['title' => 'Foo Title']);
+
+        $this->assertEquals($thread->fresh()->slug, 'foo-title');
+
+        $thread = $this->postJson(route('threads'), $thread->toArray())->json();
+
+        $this->assertEquals("foo-title-{$thread['id']}", $thread['slug']);
     }
 
     /** @test */
@@ -100,7 +102,6 @@ class CreateThreadsTest extends TestCase
 
         $this->delete($thread->path())
             ->assertStatus(403);
-
     }
 
     /** @test */
@@ -118,8 +119,34 @@ class CreateThreadsTest extends TestCase
 
         $this->assertDatabaseMissing('threads', ['id' => $thread->id]);
         $this->assertDatabaseMissing('replies', ['id' => $reply->id]);
-        
+
         $this->assertEquals(0, Activity::count());
     }
 
+    /** @test */
+    public function a_thread_with_a_title_that_ends_in_a_number_must_generate_the_proper_slug()
+    {
+        $this->signIn()
+            ->withoutExceptionHandling();
+
+        $thread = create('App\Thread', ['title' => 'Some Title 24']);
+
+        $thread = $this->postJson(route('threads'), $thread->toArray())->json();
+
+        $this->assertEquals("some-title-24-{$thread['id']}", $thread['slug']);
+    }
+
+    /**
+     * A logged in user sends a Thread to the endpoint.
+     *
+     * @param string $title
+     * @return $this
+     */
+    public function publishThread($overrides = [])
+    {
+        $thread = raw('App\Thread', $overrides);
+
+        return $this->signIn()
+                    ->post('/threads', $thread);
+    }
 }

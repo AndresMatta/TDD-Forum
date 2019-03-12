@@ -4,15 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Thread;
 use App\Channel;
+use App\Trending;
 use App\Filters\ThreadFilters;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
 use App\Rules\SpamFree;
 
 class ThreadController extends Controller
 {
     /**
-     * ThreadController constructor.
+     * Create a new ThreadController instance.
      */
     public function __construct()
     {
@@ -26,7 +26,7 @@ class ThreadController extends Controller
      * @param App\Filters\ThreadFilters $filters
      * @return \Illuminate\Http\Response
      */
-    public function index(Channel $channel, ThreadFilters $filters)
+    public function index(Channel $channel, ThreadFilters $filters, Trending $trending)
     {
         $threads = $this->getThreads($channel, $filters);
 
@@ -34,7 +34,10 @@ class ThreadController extends Controller
             return $threads;
         }
 
-        return view('threads.index', compact('threads'));
+        return view('threads.index', [
+            'threads' => $threads,
+            'trending' => $trending->get()
+        ]);
     }
 
     /**
@@ -64,7 +67,11 @@ class ThreadController extends Controller
         $attributes['user_id'] = auth()->id();
 
         $thread = Thread::create($attributes);
-
+        
+        if (request()->wantsJson()) {
+            return response($thread, 201);
+        }
+        
         return redirect($thread->path())
             ->with('flash', 'Your thread has been published.');
     }
@@ -76,11 +83,15 @@ class ThreadController extends Controller
      * @param  \App\Thread  $thread
      * @return \Illuminate\Http\Response
      */
-    public function show($channel, Thread $thread)
+    public function show($channel, Thread $thread, Trending $trending)
     {
         if (auth()->check()) {
             auth()->user()->read($thread);
         }
+
+        $trending->push($thread);
+
+        $thread->visits()->record();
 
         return view('threads.show', compact('thread'));
     }
@@ -143,6 +154,6 @@ class ThreadController extends Controller
             $threads->where('channel_id', $channel->id);
         }
 
-        return $threads->get();
+        return $threads->paginate(5);
     }
 }

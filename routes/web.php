@@ -1,7 +1,5 @@
 <?php
 
-use App\Http\Controllers\ThreadController;
-
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -17,16 +15,18 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Auth::routes();
+Auth::routes(['verify' => true]);
 // Home
-Route::get('/home', 'HomeController@index')->name('home');
+Route::get('/home', 'HomeController@index')->middleware('verified')->name('home');
 // Users
 Route::get('/profiles/{user}', 'ProfileController@show')->name('profile');
+Route::resource('/api/users', 'Api\UserController');
+Route::post('/api/users/{user}/avatar', 'Api\UserAvatarController@store')->name('avatar');
 // Notifications
 Route::get('/profiles/{user}/notifications', 'UserNotificationController@index');
 Route::delete('/profiles/{user}/notifications/{notification}', 'UserNotificationController@destroy');
 // Threads
-Route::get('/threads', 'ThreadController@index');
+Route::get('/threads', 'ThreadController@index')->name('threads');
 Route::get('/threads/create', 'ThreadController@create');
 Route::get('/threads/{channel}/{thread}', 'ThreadController@show');
 Route::delete('/threads/{channel}/{thread}', 'ThreadController@destroy');

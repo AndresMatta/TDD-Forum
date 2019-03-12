@@ -3,7 +3,6 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Notifications\ThreadWasUpdated;
 use App\Events\ThreadReceiveNewReply;
 
 class Thread extends Model
@@ -42,6 +41,20 @@ class Thread extends Model
         static::deleting(function ($thread) {
             $thread->replies->each->delete();
         });
+
+        static::created(function ($thread) {
+            $thread->update(['slug' => $thread->title]);
+        });
+    }
+
+    /**
+     * Overrides the route key for the model.
+     *
+     * @return string
+     */
+    public function getRouteKeyName()
+    {
+        return 'slug';
     }
 
     /**
@@ -51,17 +64,7 @@ class Thread extends Model
      */
     public function path()
     {
-        return "/threads/{$this->channel->slug}/{$this->id}";
-    }
-
-    /**
-     * A thread has replies.
-     *
-     * @return Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function replies()
-    {
-        return $this->hasMany(Reply::class);
+        return "/threads/{$this->channel->slug}/{$this->slug}";
     }
 
     /**
@@ -82,6 +85,37 @@ class Thread extends Model
     public function channel()
     {
         return $this->belongsTo(Channel::class);
+    }
+
+    /**
+     * A thread has replies.
+     *
+     * @return Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function replies()
+    {
+        return $this->hasMany(Reply::class);
+    }
+
+    /**
+     * Description.
+     *
+     * @return Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function subscriptions()
+    {
+        return $this->hasMany(ThreadSubscription::class);
+    }
+
+    /**
+     * Description.
+     *
+     * @param
+     * @return
+     */
+    public function visits()
+    {
+        return new Visits($this);
     }
 
     /**
@@ -142,18 +176,24 @@ class Thread extends Model
     /**
      * Description.
      *
-     * @return Illuminate\Database\Eloquent\Relations\HasMany
+     * @param
+     * @return
      */
-    public function subscriptions()
+    public function setSlugAttribute($value)
     {
-        return $this->hasMany(ThreadSubscription::class);
+        $slug = str_slug($value);
+
+        if (static::whereSlug($slug)->exists()) {
+            $slug = "{$slug}-" . $this->id;
+        }
+
+        $this->attributes['slug'] = $slug;
     }
 
     /**
-     * Description.
+     * Determine if the current user is subscribe to the thread.
      *
-     * @param
-     * @return
+     * @return bool
      */
     public function getIsSubscribedToAttribute()
     {
@@ -163,10 +203,10 @@ class Thread extends Model
     }
 
     /**
-     * Description.
+     * Determine if the thread has been updated since the user last read.
      *
-     * @param
-     * @return
+     * @param App\User $user
+     * @return bool
      */
     public function hasUpdatesFor($user)
     {
