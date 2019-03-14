@@ -48,7 +48,7 @@ class Thread extends Model
     }
 
     /**
-     * Overrides the route key for the model.
+     * Get the route key for the model.
      *
      * @return string
      */
@@ -98,7 +98,7 @@ class Thread extends Model
     }
 
     /**
-     * Description.
+     * A thread may have many subscriptions.
      *
      * @return Illuminate\Database\Eloquent\Relations\HasMany
      */
@@ -108,10 +108,9 @@ class Thread extends Model
     }
 
     /**
-     * Description.
+     * Get the visits of the thread.
      *
-     * @param
-     * @return
+     * @return App\Visits
      */
     public function visits()
     {
@@ -119,10 +118,9 @@ class Thread extends Model
     }
 
     /**
-     * Description.
+     * Applies the given filters to the query.
      *
-     * @param
-     * @return
+     * @return mixed
      */
     public function scopeFilter($query, $filters)
     {
@@ -162,7 +160,7 @@ class Thread extends Model
     }
 
     /**
-     * Description.
+     * Unsubscribe the user to the current thread.
      *
      * @param int $userId
      */
@@ -174,10 +172,9 @@ class Thread extends Model
     }
 
     /**
-     * Description.
+     * Set the slug attribute.
      *
-     * @param
-     * @return
+     * @return string
      */
     public function setSlugAttribute($value)
     {
@@ -215,5 +212,16 @@ class Thread extends Model
         $key = $user->visitedThreadCacheKey($this);
 
         return $this->updated_at > cache($key);
+    }
+
+    /**
+     * Marks the current reply as the best.
+     *
+     * @param int $replyId
+     * @return void
+     */
+    public function markBestReply($replyId)
+    {
+        $this->update(['best_reply_id' => $replyId]);
     }
 }

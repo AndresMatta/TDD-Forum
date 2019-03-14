@@ -26,6 +26,9 @@
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 
     <style>
+        body {
+            padding-botton: 100px;
+        }
         .level {
             display: flex;
             align-item: center;
@@ -35,6 +38,9 @@
         }
         .mr-1 {
             margin-right: 1em,
+        }
+        .ml-a {
+            margin-left: auto;
         }
         [v-cloak] {
             display: none;

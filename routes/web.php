@@ -36,10 +36,12 @@ Route::get('/threads/{channel}', 'ThreadController@index');
 Route::get('/threads/{channel}/{thread}/replies', 'ReplyController@index');
 Route::post('/threads/{channel}/{thread}/replies', 'ReplyController@store');
 Route::patch('/replies/{reply}', 'ReplyController@update');
-Route::delete('/replies/{reply}', 'ReplyController@destroy');
+Route::delete('/replies/{reply}', 'ReplyController@destroy')->name('replies.destroy');
 // Favorites
 Route::post('/replies/{reply}/favorites', 'FavoriteController@store');
 Route::delete('/replies/{reply}/favorites', 'FavoriteController@destroy');
 // Subscriptions
 Route::post('threads/{channel}/{thread}/subscriptions', 'ThreadSubscriptionController@store');
 Route::delete('threads/{channel}/{thread}/subscriptions', 'ThreadSubscriptionController@destroy');
+// Best replies
+Route::post('/replies/{reply}/best', 'BestReplyController@store')->name('best-replies.store');

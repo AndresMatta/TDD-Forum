@@ -29,7 +29,7 @@ class Reply extends Model
      *
      * @var array
      */
-    protected $appends = ['favoritesCount', 'isFavorited'];
+    protected $appends = ['favoritesCount', 'isFavorited', 'isBest'];
 
     /**
      * Description.
@@ -38,14 +38,24 @@ class Reply extends Model
     protected static function boot()
     {
         parent::boot();
-        
-        static::created(function($reply) {
+
+        static::created(function ($reply) {
             $reply->thread->increment('replies_count');
         });
 
-        static::deleted(function($reply) {
+        static::deleted(function ($reply) {
             $reply->thread->decrement('replies_count');
         });
+    }
+
+    /**
+     * Return the string path of the Reply.
+     *
+     * @return string
+     */
+    public function path()
+    {
+        return $this->thread->path() . "#reply-{$this->id}";
     }
 
     /**
@@ -59,7 +69,7 @@ class Reply extends Model
     }
 
     /**
-     * A reply belongs in a thread.
+     * A reply belongs to a thread.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -69,10 +79,30 @@ class Reply extends Model
     }
 
     /**
-     * Description.
+     * Replaces all the mentions to users in the body with a link to their profiles.
      *
-     * @param
-     * @return
+     * @param string $body
+     * @return void
+     */
+    public function setBodyAttribute($body)
+    {
+        $this->attributes['body'] = preg_replace('/@([\w\-]+)/', '<a href="/profiles/$1">$0</a>', $body);
+    }
+
+    /**
+     * It checks if the reply is the best reply.
+     *
+     * @return bool
+     */
+    public function getIsBestAttribute()
+    {
+        return $this->isBest();
+    }
+
+    /**
+     * Determines if the reply was published recently.
+     *
+     * @return bool
      */
     public function wasJustPublished()
     {
@@ -80,10 +110,9 @@ class Reply extends Model
     }
 
     /**
-     * Description.
+     * Detects all the mentioned users in the reply.
      *
-     * @param
-     * @return
+     * @return array
      */
     public function mentionedUsers()
     {
@@ -93,23 +122,12 @@ class Reply extends Model
     }
 
     /**
-     * Return the string path of the Thread.
+     * Determines if the current reply is marked as the best.
      *
-     * @return string
+     * @return bool
      */
-    public function path()
+    public function isBest()
     {
-        return $this->thread->path() . "#reply-{$this->id}";
-    }
-
-    /**
-     * Description.
-     *
-     * @param
-     * @return
-     */
-    public function setBodyAttribute($body)
-    {
-        $this->attributes['body'] = preg_replace('/@([\w\-]+)/', '<a href="/profiles/$1">$0</a>', $body);
+        return $this->thread->best_reply_id == $this->id;
     }
 }

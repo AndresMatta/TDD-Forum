@@ -10,12 +10,21 @@ require('./bootstrap');
 window.Vue = require('vue');
 
 // This wil check if the user has permission to do do something.
-window.Vue.prototype.authorize = function(handler) {
+
+let authorizations = require('./authorizations');
+
+window.Vue.prototype.authorize = function(...params) {
     
-    let user = window.App.user;
+    if(! window.App.signedIn) return false;
     
-    return user ? handler(user) : false;
+    if(typeof params[0] === 'string') {
+        return authorizations[params[0]](params[1]);
+    } 
+    
+    return params[0](window.App.user);
 };
+
+Vue.prototype.signedIn = window.App.signedIn;
 
 /**
  * The following block of code may be used to automatically register your

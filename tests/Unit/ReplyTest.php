@@ -10,7 +10,7 @@ use Carbon\Carbon;
 class ReplyTest extends TestCase
 {
     use RefreshDatabase;
-    
+
     /** @test */
     public function it_has_an_owner()
     {
@@ -25,9 +25,9 @@ class ReplyTest extends TestCase
         $reply = create('App\Reply');
 
         $this->assertTrue($reply->wasJustPublished());
-        
+
         $reply->created_at = Carbon::now()->subMinute();
-        
+
         $this->assertFalse($reply->wasJustPublished());
     }
 
@@ -49,6 +49,17 @@ class ReplyTest extends TestCase
         ]);
 
         $this->assertEquals('Hello <a href="/profiles/JohnDoe">@JohnDoe</a>', $reply->body);
+    }
 
+    /** @test */
+    public function it_knows_if_it_is_the_best_reply()
+    {
+        $reply = create('App\Reply');
+
+        $this->assertFalse($reply->isBest());
+        
+        $reply->thread->update(['best_reply_id' => $reply->id]);
+        
+        $this->assertTrue($reply->fresh()->isBest());
     }
 }
