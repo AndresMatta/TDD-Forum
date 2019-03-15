@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<thread-view inline-template :initial-replies-count="{{ $thread->replies_count }}">
+<thread-view inline-template :thread="{{ $thread }}">
     <div class="container">
         <div class="row">
             <div class="col-md-8">
@@ -43,8 +43,11 @@
                             <a href="#">{{ $thread->creator->name }}</a> and currently has <span v-text="repliesCount"></span> 
                             {{ str_plural('comment', $thread->replies_count) }}.
                         <p>
-                        <p>
+                        <p v-if="signedIn">
                             <subscribe-button :active="{{ json_encode($thread->isSubscribedTo) }}"></subscribe-button>
+                            <button class="btn btn-warning" v-if="authorize('isAdmin')" @click="toggleLock">
+                                <span :class="icon"></span>
+                            </button>
                         </p>
                     </div>
                 </div>

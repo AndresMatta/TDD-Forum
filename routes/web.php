@@ -29,6 +29,7 @@ Route::delete('/profiles/{user}/notifications/{notification}', 'UserNotification
 Route::get('/threads', 'ThreadController@index')->name('threads');
 Route::get('/threads/create', 'ThreadController@create');
 Route::get('/threads/{channel}/{thread}', 'ThreadController@show');
+Route::patch('/threads/{channel}/{thread}', 'ThreadController@update')->name('threads.update');
 Route::delete('/threads/{channel}/{thread}', 'ThreadController@destroy');
 Route::post('/threads', 'ThreadController@store');
 Route::get('/threads/{channel}', 'ThreadController@index');
@@ -45,3 +46,5 @@ Route::post('threads/{channel}/{thread}/subscriptions', 'ThreadSubscriptionContr
 Route::delete('threads/{channel}/{thread}/subscriptions', 'ThreadSubscriptionController@destroy');
 // Best replies
 Route::post('/replies/{reply}/best', 'BestReplyController@store')->name('best-replies.store');
+// Lock Threads
+Route::patch('locked-threads/{thread}', 'LockedThreadController@update')->name('locked-threads.update')->middleware('admin');

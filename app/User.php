@@ -53,6 +53,16 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Checks if the name of the user matches with one of the administradors.
+     *
+     * @return bool
+     */
+    public function isAdmin()
+    {
+        return in_array($this->name, ['JohnDoe', 'AndresMatta']);
+    }
+
+    /**
      * A user has many Threads.
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany

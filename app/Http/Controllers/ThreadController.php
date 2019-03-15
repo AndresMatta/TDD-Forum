@@ -67,11 +67,11 @@ class ThreadController extends Controller
         $attributes['user_id'] = auth()->id();
 
         $thread = Thread::create($attributes);
-        
+
         if (request()->wantsJson()) {
             return response($thread, 201);
         }
-        
+
         return redirect($thread->path())
             ->with('flash', 'Your thread has been published.');
     }
@@ -111,12 +111,13 @@ class ThreadController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Channel  $channel
      * @param  \App\Thread  $thread
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Thread $thread)
+    public function update(Request $request, $channel, Thread $thread)
     {
-        //
+        
     }
 
     /**

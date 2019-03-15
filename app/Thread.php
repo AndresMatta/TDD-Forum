@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Events\ThreadReceiveNewReply;
+use Carbon\Carbon;
 
 class Thread extends Model
 {
